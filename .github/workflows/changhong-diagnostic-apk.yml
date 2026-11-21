@@ -47,7 +47,11 @@ jobs:
           PY
       - name: Build and verify Android 5.1 compatibility
         run: |
-          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          if [[ ! -d "$ANDROID_HOME/platforms/android-36" || ! -x "$ANDROID_HOME/build-tools/36.0.0/apksigner" ]]; then
+            sdkmanager_path=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)
+            test -n "$sdkmanager_path"
+            "$sdkmanager_path" 'platforms;android-36' 'build-tools;36.0.0'
+          fi
           bash gradlew --no-daemon -Pdiag :app:assembleGuardRelease
           cp app/build/outputs/apk/guard/release/*.apk aerial-changhong-test.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --min-sdk-version 22 --print-certs aerial-changhong-test.apk
