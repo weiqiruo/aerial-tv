@@ -1594,6 +1594,14 @@ class HomeGuardService : AccessibilityService() {
     override fun onKeyEvent(event: KeyEvent): Boolean {
         keySeen = true
         if (!GuardSetup.isUserUnlocked(this)) return false
+        // Changhong ZLH74GiR2G: compare the remote's Home key with a known delivered key (#1695).
+        if (Build.MANUFACTURER.equals("ChangHong", ignoreCase = true) &&
+            Build.PRODUCT == "hisi551_2G_SEC" && event.device?.name == "CH BT RC" &&
+            (event.scanCode == 186 || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) &&
+            event.repeatCount == 0
+        ) {
+            DiagLog.i("guard: Changhong remote action=${event.action} keyCode=${event.keyCode} scanCode=${event.scanCode}")
+        }
         if (event.keyCode in VOLUME_KEYS) {
             return if (filteringForCecOnly || (isDefaultHome() && defaultHomeNeedsHomeFilter)) {
                 false
